@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="app-shell" data-grid-size="{{ grid_size }}" data-role="{{ user.role.value }}" data-low-battery-threshold="{{ low_battery_threshold }}" data-poll-seconds="{{ poll_interval_seconds }}">
+    <header class="topbar">
+        <div>
+            <h1>Ground Control Station</h1>
+            <p class="muted">User: <strong>{{ user.username }}</strong> | Role: <strong>{{ user.role.value }}</strong></p>
+        </div>
+        <div class="status-cluster">
+            <span id="connectionBadge" class="badge badge-neutral">Connecting...</span>
+            <span id="batteryBadge" class="badge badge-neutral">Battery --</span>
+            <a class="logout-link" href="/logout">Logout</a>
+        </div>
+    </header>
+
+    <main class="dashboard-grid">
+        <section class="panel map-panel">
+            <div class="panel-header">
+                <h2>2D Map</h2>
+                <span id="robotStatusText" class="muted">Status: unknown</span>
+            </div>
+            <div id="grid" class="grid"></div>
+            <div class="telemetry-row">
+                <div><strong>Position:</strong> <span id="positionText">(0, 0)</span></div>
+                <div><strong>Latency:</strong> <span id="latencyText">0 ms</span></div>
+                <div><strong>Signal:</strong> <span id="signalText">n/a</span></div>
+            </div>
+        </section>
+
+        <section class="panel control-panel">
+            <div class="panel-header">
+                <h2>Command Console</h2>
+                <span class="muted">Commander only</span>
+            </div>
+            <div class="button-grid">
+                <button class="cmd-btn" data-direction="up">↑</button>
+                <button class="cmd-btn" data-direction="left">←</button>
+                <button class="cmd-btn" data-direction="down">↓</button>
+                <button class="cmd-btn" data-direction="right">→</button>
+            </div>
+            <label>Steps</label>
+            <input id="stepInput" type="number" min="1" max="5" value="1">
+            <p id="commandMessage" class="small-text"></p>
+            <div class="legend">
+                <span class="dot robot-dot"></span> Robot
+                <span class="dot warn-dot"></span> Low battery zone alert active
+            </div>
+        </section>
+
+        <section class="panel log-panel">
+            <div class="panel-header">
+                <h2>Mission Log</h2>
+                <button id="refreshLogsBtn" class="secondary-btn">Refresh</button>
+            </div>
+            <div id="logList" class="log-list"></div>
+        </section>
+    </main>
+</div>
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}
