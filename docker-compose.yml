@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  dashboard:
+    build: .
+    container_name: robot-dashboard
+    ports:
+      - "8000:8000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      DATABASE_URL: ${DATABASE_URL:-sqlite:///./robot_gcs.db}
+      ROBOT_API_BASE_URL: ${ROBOT_API_BASE_URL:-http://robot-api:8001}
+      ROBOT_TELEMETRY_ENDPOINT: ${ROBOT_TELEMETRY_ENDPOINT:-/telemetry}
+      ROBOT_MOVE_ENDPOINT: ${ROBOT_MOVE_ENDPOINT:-/move}
+      ROBOT_HEALTH_ENDPOINT: ${ROBOT_HEALTH_ENDPOINT:-/health}
+      LOW_BATTERY_THRESHOLD: ${LOW_BATTERY_THRESHOLD:-25}
+      GRID_SIZE: ${GRID_SIZE:-10}
+      DEFAULT_COMMANDER_USERNAME: ${DEFAULT_COMMANDER_USERNAME:-commander}
+      DEFAULT_COMMANDER_PASSWORD: ${DEFAULT_COMMANDER_PASSWORD:-ChangeThisPassword123!}
+    volumes:
+      - ./:/app
+    depends_on:
+      - robot-api
+
+  # Replace this placeholder image/service name with the official Virtual Robot container from Blackboard.
+  robot-api:
+    image: ghcr.io/example/virtual-robot:latest
+    container_name: virtual-robot
+    ports:
+      - "8001:8001"
