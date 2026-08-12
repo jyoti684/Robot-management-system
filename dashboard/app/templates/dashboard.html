@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | Robot Management System{% endblock %}
+{% block content %}
+<div id="app" data-role="{{ user.role }}" data-poll-ms="{{ poll_ms }}">
+  <header class="topbar">
+    <div>
+      <span class="eyebrow">CMP9134 SOFTWARE ENGINEERING</span>
+      <h1>Robot Ground Control Station</h1>
+    </div>
+    <div class="operator">
+      <span class="role-badge">{{ user.role|upper }}</span>
+      <span>{{ user.username }}</span>
+      <form method="post" action="/logout"><button class="ghost" type="submit">Log out</button></form>
+    </div>
+  </header>
+
+  <main class="dashboard-grid">
+    <section class="panel status-panel">
+      <div class="panel-heading"><h2>Mission Status</h2><span id="updated-at" class="small">Waiting…</span></div>
+      <div class="metric"><span>Connection</span><strong id="connection" class="status-pill neutral">Connecting</strong></div>
+      <div class="metric"><span>Robot status</span><strong id="robot-status">Unknown</strong></div>
+      <div class="metric"><span>Battery</span><strong id="battery">--%</strong></div>
+      <div class="battery-track"><div id="battery-bar"></div></div>
+      <div class="metric"><span>Latency</span><strong id="latency">-- ms</strong></div>
+      <div class="metric"><span>Signal</span><strong id="signal">Unknown</strong></div>
+      <div id="warning" class="warning hidden" role="alert"></div>
+    </section>
+
+    <section class="panel map-panel">
+      <div class="panel-heading"><h2>Live 2D Position Map</h2><strong id="coordinates">X: 0, Y: 0</strong></div>
+      <div id="map" class="position-map" aria-label="Robot position grid">
+        <div id="robot-marker" class="robot-marker" aria-label="Robot">R</div>
+      </div>
+      <div class="control-strip">
+        <label>Steps
+          <select id="steps">
+            <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+          </select>
+        </label>
+        <div class="direction-pad" aria-label="Movement controls">
+          <button data-direction="up" class="move">▲</button>
+          <button data-direction="left" class="move">◀</button>
+          <button data-direction="down" class="move">▼</button>
+          <button data-direction="right" class="move">▶</button>
+        </div>
+        <p id="permission-note" class="small"></p>
+      </div>
+    </section>
+
+    <section class="panel log-panel">
+      <div class="panel-heading"><h2>Mission Audit Log</h2><button id="refresh-logs" class="ghost">Refresh</button></div>
+      <div id="logs" class="log-list" aria-live="polite"></div>
+    </section>
+  </main>
+</div>
+<script src="/static/app.js"></script>
+{% endblock %}

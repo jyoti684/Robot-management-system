@@ -1,119 +1,150 @@
-# Robot Ground Control Station (FastAPI)
+# Robot Management System (CMP9134)
 
-A web-based dashboard for monitoring and commanding a virtual autonomous robot through a REST API. This repository is structured to satisfy the coursework requirement for a **Robot Management System** with telemetry monitoring, command control, RBAC, audit logging, graceful error handling, Docker support, automated tests, and CI/CD.
+A complete, self-contained Robot Management System comprising:
 
-## Features
+- **Dashboard service:** FastAPI, Jinja2, JavaScript, SQLAlchemy and SQLite.
+- **Virtual Robot API:** a second FastAPI service with stateful telemetry and movement.
+- **Security:** signed sessions, PBKDF2 password hashing and Viewer/Commander RBAC.
+- **Reliability:** timeouts, bounded retries, Signal Lost state and audit logging.
+- **Quality evidence:** PyTest suite, coverage configuration and GitHub Actions CI.
+- **Deployment:** Dockerfiles and Docker Compose with health checks and startup ordering.
 
-- **Robot API integration** via HTTP using a dedicated `RobotClient`
-- **Live telemetry dashboard** with battery, position, status, latency, and signal state
-- **2D grid map** showing robot position in real time
-- **Secure authentication** with password hashing and session-based login
-- **Role-Based Access Control**:
-  - `viewer`: telemetry and logs only
-  - `commander`: telemetry, logs, and movement commands
-- **Persistent audit trail** using SQLite + SQLAlchemy
-- **Resilience to connection issues** with retry logic and non-blocking UI behaviour
-- **Software engineering practices**:
-  - OOP service layer
-  - Singleton-style cached robot client
-  - Factory for command payload creation
-  - Observer-style telemetry subscribers for audit and alert logging
-- **Automated tests** (unit + integration)
-- **GitHub Actions CI**
-- **Docker / docker-compose** deployment
+## 1. Required software
 
-## Project Structure
+Install one of the following:
 
-```text
-robot_gcs_project/
-├── app/
-│   ├── api/routes/          # HTTP routes and web pages
-│   ├── core/                # configuration
-│   ├── services/            # robot client, telemetry subject, auth logic
-│   ├── static/              # CSS and browser JavaScript
-│   ├── templates/           # Jinja2 templates
-│   ├── db.py                # SQLAlchemy setup
-│   ├── main.py              # FastAPI app entry point
-│   ├── models.py            # DB models
-│   ├── schemas.py           # Pydantic DTOs
-│   └── security.py          # auth and RBAC helpers
-├── tests/
-│   ├── unit/
-│   └── integration/
-├── .github/workflows/ci.yml
-├── docker-compose.yml
-├── Dockerfile
-├── requirements.txt
-└── README.md
-```
+### Recommended
+- Docker Desktop with Docker Compose v2.
 
-## Local Setup
+### Native development alternative
+- Python 3.12 or later.
 
-1. Create and activate a virtual environment.
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Copy `.env.example` to `.env` and update values if needed.
-4. Run the application:
-   ```bash
-   uvicorn app.main:app --reload
-   ```
-5. Open `http://localhost:8000`
+## 2. Fastest start with Docker
 
-## Default Commander Account
-
-The application seeds a default commander on first startup using the configured environment variables.
-
-- Username: `commander`
-- Password: `ChangeThisPassword123!`
-
-Change these before submitting or deploying.
-
-## Docker Setup
-
-> Replace the placeholder `robot-api` image in `docker-compose.yml` with the actual container image provided on Blackboard.
+1. Copy `.env.example` to `.env`.
+2. Change the passwords and secret in `.env`.
+3. Run:
 
 ```bash
 docker compose up --build
 ```
 
-The dashboard will be available at `http://localhost:8000`.
+4. Open: <http://localhost:8000>
 
-## Assumed Robot API Contract
+The Virtual Robot API is available at <http://localhost:8001/docs>.
 
-Because the exact Blackboard API specification is not included here, this scaffold assumes:
+### Demonstration accounts
 
-- `GET /telemetry` → returns JSON with battery and coordinates
-- `POST /move` → accepts `{ "direction": "up", "steps": 1 }`
-- `GET /health` → optional health endpoint
+The defaults below are intended only for local assessment demonstration and can be changed in `.env`:
 
-The `RobotClient` is intentionally isolated so you can adapt endpoint names or payload shapes in a single file once the final API documentation is released.
+| Role | Username | Password |
+|---|---|---|
+| Commander | `commander` | `Commander123!` |
+| Viewer | `viewer` | `Viewer123!` |
 
-## Testing
+## 3. Windows one-click launch
 
-Run all tests:
+Double-click:
 
-```bash
-pytest --cov=app --cov-report=term-missing
+```text
+start_windows.bat
 ```
 
-## Recommended GitHub Evidence for Submission
+To stop the application, double-click `stop_windows.bat`.
 
-Upload this full repository and show evidence of:
+## 4. Native Python start
 
-- meaningful commits over time
-- Issues / Kanban board for feature-driven development
-- CI pipeline passing
-- test coverage runs
-- Docker build and application startup
+### Linux/macOS
 
-## Report / Video Alignment
+```bash
+chmod +x start_native.sh
+./start_native.sh
+```
 
-This codebase is designed to support your report sections on:
+### Windows PowerShell
 
-- architecture and design patterns
-- project planning and risk mitigation
-- testing and containerisation
-- social / ethical implications of robotic control systems
-- AI verification log entries for code generation, review, and modification
+```powershell
+py -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
+Start-Process powershell -ArgumentList '-NoExit', '-Command', '.venv\Scripts\Activate.ps1; uvicorn virtual_robot.main:app --host 0.0.0.0 --port 8001'
+$env:ROBOT_API_URL='http://127.0.0.1:8001'
+uvicorn app.main:app --app-dir dashboard --host 0.0.0.0 --port 8000
+```
+
+## 5. Functional demonstration
+
+1. Log in as **Viewer** and confirm telemetry is visible.
+2. Confirm movement controls are disabled and a direct command returns HTTP 403.
+3. Log out and log in as **Commander**.
+4. Move the robot in all four directions using 1–5 steps.
+5. Confirm position, battery, latency, connection state and mission logs update.
+6. Simulate Virtual Robot failure:
+
+```bash
+python scripts/simulate_failure.py on
+```
+
+7. Confirm the dashboard displays **Signal Lost** and records a connection error.
+8. Restore the service:
+
+```bash
+python scripts/simulate_failure.py off
+```
+
+9. Confirm the dashboard reconnects automatically.
+
+## 6. Automated tests and coverage
+
+```bash
+python -m pytest --cov=dashboard/app --cov=virtual_robot --cov-report=term-missing --cov-fail-under=80
+```
+
+The suite covers authentication, RBAC, valid and invalid commands, telemetry mapping, retry exhaustion, degraded-state handling, logging, duplicate registration, logout and low-battery alerts.
+
+## 7. Smoke test of a running deployment
+
+After starting both services:
+
+```bash
+python scripts/smoke_test.py
+```
+
+The script verifies service health, Viewer restriction, Commander control and telemetry.
+
+## 8. Main endpoints
+
+### Dashboard
+- `GET /health`
+- `GET /login`
+- `POST /login`
+- `GET /register`
+- `POST /register`
+- `GET /dashboard`
+- `GET /api/robot/telemetry`
+- `POST /api/robot/command`
+- `GET /api/logs`
+- `POST /logout`
+
+### Virtual Robot API
+- `GET /health`
+- `GET /telemetry`
+- `POST /move`
+- `POST /reset`
+- `POST /admin/failure/{enabled}`
+
+## 9. Repository evidence for resubmission
+
+After uploading this project to GitHub:
+
+1. Create Issues for Docker validation, CI, negative-path tests, security hardening, README/video and accessibility.
+2. Work in named branches.
+3. Use meaningful commits.
+4. Open pull requests linked to Issues.
+5. Merge only after the CI workflow passes.
+6. Create release tag `v1.0.0`.
+7. Add real screenshots and the demonstration-video link to the report appendix.
+
+## 10. Security note
+
+This is an academic prototype. Before public or production deployment, enable HTTPS, use a managed secret store, set secure cookie flags, remove default accounts, add CSRF protection, rate limiting, account lockout and a production database.

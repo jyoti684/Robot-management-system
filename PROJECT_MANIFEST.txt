@@ -1,0 +1,31 @@
+Robot Management System v1.0.0
+CMP9134 Software Engineering
+
+DELIVERABLE TYPE
+Executable source-code project packaged as ZIP.
+
+PRIMARY START COMMAND
+docker compose up --build
+
+APPLICATION URL
+http://localhost:8000
+
+VIRTUAL ROBOT API
+http://localhost:8001/docs
+
+VALIDATED FUNCTIONS
+- Viewer and Commander authentication
+- Role-based command restriction
+- Four-direction movement with 1-5 steps
+- Telemetry: position, battery, status, connection and latency
+- SQLite mission logging
+- Low-battery alert
+- Signal Lost state during Virtual Robot outage
+- Automatic recovery after service restoration
+- Docker Compose configuration with health ordering
+- GitHub Actions CI workflow
+- Automated unit and integration tests
+
+LOCAL VALIDATION RESULT
+21 tests passed; 95.37% combined statement coverage.
+See evidence/runtime-validation.txt.

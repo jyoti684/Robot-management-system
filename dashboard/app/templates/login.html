@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Login | Robot Management System{% endblock %}
+{% block content %}
+<main class="auth-shell">
+  <section class="auth-card">
+    <div class="brand-mark">RMS</div>
+    <h1>Robot Ground Control Station</h1>
+    <p class="muted">Secure access for Viewer and Commander operators.</p>
+    {% if error %}<div class="error-box" role="alert">{{ error }}</div>{% endif %}
+    <form method="post" action="/login" class="auth-form">
+      <label>Username<input name="username" autocomplete="username" required></label>
+      <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+      <button type="submit" class="primary">Sign in</button>
+    </form>
+    <p class="small">Need a Viewer account? <a href="/register">Register here</a>.</p>
+  </section>
+</main>
+{% endblock %}

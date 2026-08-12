@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "master", "develop", "feature/**", "fix/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run tests and enforce coverage
+        run: |
+          pytest --cov=dashboard/app --cov=virtual_robot --cov-report=term-missing --cov-report=xml --cov-fail-under=80
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+
+      - name: Build dashboard image
+        run: docker build -t rms-dashboard:test ./dashboard
+
+      - name: Build virtual robot image
+        run: docker build -t rms-virtual-robot:test ./virtual_robot
+
+      - name: Validate Docker Compose configuration
+        run: docker compose config

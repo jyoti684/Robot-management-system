@@ -1,30 +1,49 @@
-version: '3.9'
-
 services:
-  dashboard:
-    build: .
-    container_name: robot-dashboard
-    ports:
-      - "8000:8000"
+  virtual-robot:
+    build:
+      context: ./virtual_robot
+    container_name: rms-virtual-robot
     environment:
-      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
-      DATABASE_URL: ${DATABASE_URL:-sqlite:///./robot_gcs.db}
-      ROBOT_API_BASE_URL: ${ROBOT_API_BASE_URL:-http://robot-api:8001}
-      ROBOT_TELEMETRY_ENDPOINT: ${ROBOT_TELEMETRY_ENDPOINT:-/telemetry}
-      ROBOT_MOVE_ENDPOINT: ${ROBOT_MOVE_ENDPOINT:-/move}
-      ROBOT_HEALTH_ENDPOINT: ${ROBOT_HEALTH_ENDPOINT:-/health}
-      LOW_BATTERY_THRESHOLD: ${LOW_BATTERY_THRESHOLD:-25}
-      GRID_SIZE: ${GRID_SIZE:-10}
-      DEFAULT_COMMANDER_USERNAME: ${DEFAULT_COMMANDER_USERNAME:-commander}
-      DEFAULT_COMMANDER_PASSWORD: ${DEFAULT_COMMANDER_PASSWORD:-ChangeThisPassword123!}
-    volumes:
-      - ./:/app
-    depends_on:
-      - robot-api
-
-  # Replace this placeholder image/service name with the official Virtual Robot container from Blackboard.
-  robot-api:
-    image: ghcr.io/example/virtual-robot:latest
-    container_name: virtual-robot
+      ROBOT_ADMIN_TOKEN: ${ROBOT_ADMIN_TOKEN:-demo-admin-token}
+      ROBOT_INITIAL_BATTERY: "100"
+      ROBOT_LATENCY_MS: "75"
     ports:
       - "8001:8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      context: ./dashboard
+    container_name: rms-dashboard
+    environment:
+      ROBOT_API_URL: http://virtual-robot:8001
+      DATABASE_URL: sqlite:////data/rms.db
+      SECRET_KEY: ${RMS_SECRET_KEY:-development-only-change-me}
+      COMMANDER_USERNAME: ${RMS_COMMANDER_USERNAME:-commander}
+      COMMANDER_PASSWORD: ${RMS_COMMANDER_PASSWORD:-Commander123!}
+      VIEWER_USERNAME: ${RMS_VIEWER_USERNAME:-viewer}
+      VIEWER_PASSWORD: ${RMS_VIEWER_PASSWORD:-Viewer123!}
+      COOKIE_SECURE: "false"
+    ports:
+      - "8000:8000"
+    volumes:
+      - rms-data:/data
+    depends_on:
+      virtual-robot:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 8s
+    restart: unless-stopped
+
+volumes:
+  rms-data:

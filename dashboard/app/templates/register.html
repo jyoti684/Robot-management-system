@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Register Viewer | Robot Management System{% endblock %}
+{% block content %}
+<main class="auth-shell">
+  <section class="auth-card">
+    <div class="brand-mark">RMS</div>
+    <h1>Register Viewer Account</h1>
+    <p class="muted">Viewer accounts can monitor telemetry and logs but cannot move the robot.</p>
+    {% if error %}<div class="error-box" role="alert">{{ error }}</div>{% endif %}
+    <form method="post" action="/register" class="auth-form">
+      <label>Username<input name="username" minlength="3" autocomplete="username" required></label>
+      <label>Password<input type="password" name="password" minlength="8" autocomplete="new-password" required></label>
+      <button type="submit" class="primary">Create Viewer account</button>
+    </form>
+    <p class="small"><a href="/login">Return to login</a></p>
+  </section>
+</main>
+{% endblock %}

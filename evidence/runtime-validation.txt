@@ -1,0 +1,65 @@
+ROBOT MANAGEMENT SYSTEM VALIDATION REPORT
+Generated: 2026-08-05
+
+1. Python syntax compilation
+PASS: all Python files compile.
+
+2. Docker Compose YAML parse
+PASS: docker-compose.yml is valid YAML and defines both health-ordered services.
+
+3. Automated tests and coverage
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-9.0.2, pluggy-1.6.0
+rootdir: /mnt/data/Robot_Management_System_Executable
+configfile: pytest.ini
+testpaths: tests
+plugins: asyncio-1.3.0, metadata-3.1.1, Faker-40.1.2, cov-7.0.0, ddtrace-4.4.0, json-report-1.5.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 21 items
+
+tests/test_auth_and_security.py ....                                     [ 19%]
+tests/test_integration.py .......                                        [ 52%]
+tests/test_robot_client.py ...                                           [ 66%]
+tests/test_schemas_and_factory.py ...                                    [ 80%]
+tests/test_virtual_robot.py ....                                         [100%]
+
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.13.5-final-0 ________________
+
+Name                                     Stmts   Miss  Cover
+------------------------------------------------------------
+dashboard/app/__init__.py                    0      0   100%
+dashboard/app/config.py                     16      0   100%
+dashboard/app/db.py                         27      3    89%
+dashboard/app/main.py                       29      1    97%
+dashboard/app/models.py                     30      0   100%
+dashboard/app/routes/__init__.py             0      0   100%
+dashboard/app/routes/auth.py                35      2    94%
+dashboard/app/routes/dashboard.py           16      2    88%
+dashboard/app/routes/logs.py                13      0   100%
+dashboard/app/routes/robot.py               34      0   100%
+dashboard/app/schemas.py                    32      0   100%
+dashboard/app/security.py                   44      6    86%
+dashboard/app/services/__init__.py           0      0   100%
+dashboard/app/services/auth_service.py      41      1    98%
+dashboard/app/services/robot_client.py      55      2    96%
+dashboard/app/services/telemetry.py         28      0   100%
+virtual_robot/__init__.py                    0      0   100%
+virtual_robot/main.py                       75      5    93%
+------------------------------------------------------------
+TOTAL                                      475     22    95%
+Required test coverage of 80% reached. Total coverage: 95.37%
+============================== 21 passed in 4.08s ==============================
+
+4. Running-service smoke test
+PASS: Dashboard health (200)
+PASS: Viewer login (303)
+PASS: Viewer telemetry (200)
+PASS: Viewer command rejected (403)
+PASS: Commander login (303)
+PASS: Commander command (200)
+PASS: Mission logs (200)
+All smoke tests passed.
+
+5. Failure and recovery test
+PASS: dashboard returned Signal Lost during simulated outage and reconnected after recovery.
